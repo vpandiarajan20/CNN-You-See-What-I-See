@@ -59,8 +59,6 @@ def main():
             features = resnet_features(dummy_input)
             newActs = torch.flatten(features["inception5b"])
             newActs = newActs.detach().numpy()
-            #newActs = np.expand_dims(newActs, axis=0)
-            #print(newActs.shape)
             activations.append(newActs)
 
             if folder == "RandomImages":
