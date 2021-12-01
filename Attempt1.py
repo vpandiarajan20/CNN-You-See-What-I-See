@@ -102,6 +102,18 @@ def main():
     plt.legend()
     plt.show()
 
+       
+    p_test = classifer(X_test)
+    
+    p_test = (p_test > 0).numpy().astype(int)
+    
+    equals = (y_test.numpy() == p_test)
+    accuracy = np.mean(equals)
+
+
+    print("Accuracy:", accuracy)
+
+
 
 
 
