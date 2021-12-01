@@ -39,7 +39,7 @@ def main():
     googlenet = models.googlenet(pretrained=True)
     resnet_features = FeatureExtractor(googlenet, layers=["inception5b"])
     activations = []
-    folder_names = np.array(["Dotted", "RandomImages", "Striped"])
+    folder_names = np.array(["RandomImages", "Striped"])
     for folder in folder_names:    
         listing = os.listdir(folder)    
         for file in listing:
@@ -50,8 +50,6 @@ def main():
             features = resnet_features(dummy_input)
             newActs = torch.flatten(features["inception5b"])
             newActs = newActs.detach().numpy()
-            #newActs = np.expand_dims(newActs, axis=0)
-            #print(newActs.shape)
             activations.append(newActs)
 
     activations = np.array(activations)
