@@ -21,10 +21,6 @@ class FeatureExtractor(nn.Module):
         def fn(_, __, output):
             self._features[layer_id] = output
         return fn
-
-    def forward(self, x: Tensor):
-        _ = self.model(x)
-        return self._features
     
     def save_grads(self, grad):
         self.gradients = grad
@@ -35,6 +31,7 @@ class FeatureExtractor(nn.Module):
         logits = self.output[:, className]
         logits.backward(torch.ones_like(logits), retain_graph = True)
 
-    def call(self, input):
-        self.output = self.model(input)
-        return self.output
+    def forward(self, x):
+        _ = self.model(x)
+        return self._features
+

@@ -4,7 +4,6 @@ import numpy as np
 import torch
 
 
-
 class LinearClassifier(torch.nn.Module):
 
     def __init__(self, input_dimension):

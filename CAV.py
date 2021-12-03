@@ -13,13 +13,17 @@ from Classifier import LinearClassifier, train_model
 from FeatureExtractor import FeatureExtractor
 
 
-def preprocess_activations(randomfiles = "RandomImages", concepts = ["Striped"]):
+# experiment with differnet models 
+# experiment w torch vs sklearn libraries for linear model (torch linear classifier, sgdclassifier, logisitic regression)
+
+def preprocess_activations(randomfiles = "RandomImages", concepts = ["Striped"], classID = 340, layer_name="inception5b"):
     googlenet = models.googlenet(pretrained=True)
-    resnet_features = FeatureExtractor(googlenet, layers=["inception5b"])
+    resnet_features = FeatureExtractor(googlenet, layers=[layer_name])
     activations = []
     labels = []
     folder_names = np.array()
     folder_names = concepts.append(randomfiles)
+
     for folder in folder_names:    
         listing = os.listdir(folder)    
         for file in listing:
@@ -28,7 +32,8 @@ def preprocess_activations(randomfiles = "RandomImages", concepts = ["Striped"])
             dummy_input = convert_tensor(img)
             dummy_input = dummy_input[None, :, :, :]
             features = resnet_features(dummy_input)
-            newActs = torch.flatten(features["inception5b"])
+            gradients = resnet_features.get_gradients(340, layer_name)
+            newActs = torch.flatten(features[layer_name])
             newActs = newActs.detach().numpy()
             activations.append(newActs)
 
@@ -60,8 +65,6 @@ def CAV(from_file=False, file_name='linear_classifier_model.pt'):
         return cav
 
     else: 
-        
-        
         print("Shape of Train Dataset: ", activations.shape)
         print("Shape of Labels: ", labels.shape)
 
@@ -73,18 +76,6 @@ def CAV(from_file=False, file_name='linear_classifier_model.pt'):
 
         X_train, X_test, y_train, y_test = train_test_split(activations, labels, 
                                             test_size=0.20, random_state=21)
-
-        # model = SGDClassifier(alpha=0.001)
-        # model.fit(X_train, y_train)
-
-        # model.evaulate()
-
-        # if len(model.coef_) == 1:
-        #     cav = np.array([-model.coef_[0], model.coef_[0]])
-        # else: 
-        #     cav = -np.array(model.coef_)
-        # print(cav)
-        # return cav
 
         X_train = torch.tensor(X_train)
         X_test = torch.tensor(X_test)
@@ -118,6 +109,21 @@ def CAV(from_file=False, file_name='linear_classifier_model.pt'):
         print(cav)
 
         torch.save(classifer, file_name)
+
+        return cav 
+
+
+        # model = SGDClassifier(alpha=0.001)
+        # model.fit(X_train, y_train)
+
+        # model.evaulate()
+
+        # if len(model.coef_) == 1:
+        #     cav = np.array([-model.coef_[0], model.coef_[0]])
+        # else: 
+        #     cav = -np.array(model.coef_)
+        # print(cav)
+        # return cav
 
 def main():
     cav = CAV(from_file=True)
