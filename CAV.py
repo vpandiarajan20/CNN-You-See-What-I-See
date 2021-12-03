@@ -16,15 +16,18 @@ from FeatureExtractor import FeatureExtractor
 # experiment with differnet models 
 # experiment w torch vs sklearn libraries for linear model (torch linear classifier, sgdclassifier, logisitic regression)
 
+def directional_derivative(classifier, cav, classID = 340, layer_name="inception5b"):
+    pass
+
+
 def preprocess_activations(randomfiles = "RandomImages", concepts = ["Striped"], classID = 340, layer_name="inception5b"):
     googlenet = models.googlenet(pretrained=True)
     resnet_features = FeatureExtractor(googlenet, layers=[layer_name])
     activations = []
     labels = []
-    folder_names = np.array()
-    folder_names = concepts.append(randomfiles)
+    concepts.append(randomfiles)
 
-    for folder in folder_names:    
+    for folder in concepts:    
         listing = os.listdir(folder)    
         for file in listing:
             img = Image.open(folder + "/" + file)
@@ -32,7 +35,9 @@ def preprocess_activations(randomfiles = "RandomImages", concepts = ["Striped"],
             dummy_input = convert_tensor(img)
             dummy_input = dummy_input[None, :, :, :]
             features = resnet_features(dummy_input)
+
             gradients = resnet_features.get_gradients(340, layer_name)
+
             newActs = torch.flatten(features[layer_name])
             newActs = newActs.detach().numpy()
             activations.append(newActs)
@@ -45,7 +50,7 @@ def preprocess_activations(randomfiles = "RandomImages", concepts = ["Striped"],
     activations = np.array(activations)
     labels = np.array(labels)
     labels = np.expand_dims(labels, axis=1)
-    return activations, labels 
+    return activations, labels, gradients 
 
 def CAV(from_file=False, file_name='linear_classifier_model.pt'):
     # inception_v3 = models.inception_v3(pretrained=True)
@@ -65,11 +70,10 @@ def CAV(from_file=False, file_name='linear_classifier_model.pt'):
         return cav
 
     else: 
+        
+        activations, labels, gradients = preprocess_activations()
         print("Shape of Train Dataset: ", activations.shape)
         print("Shape of Labels: ", labels.shape)
-
-        activations, labels = preprocess_activations()
-
         # ---------------------------------------------------
         # Train Linear Classifier
         # ---------------------------------------------------
@@ -126,7 +130,7 @@ def CAV(from_file=False, file_name='linear_classifier_model.pt'):
         # return cav
 
 def main():
-    cav = CAV(from_file=True)
+    cav = CAV(from_file=False)
 
 
 if __name__ == '__main__':

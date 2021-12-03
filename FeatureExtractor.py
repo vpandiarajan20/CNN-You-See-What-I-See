@@ -27,11 +27,16 @@ class FeatureExtractor(nn.Module):
 
     def get_gradients(self, className, layerName):
         activations = self._features[layerName]
+        print(self._features)
+
         activations.register_hook(self.save_grads)
         logits = self.output[:, className]
+
         logits.backward(torch.ones_like(logits), retain_graph = True)
+        gradients = self.gradients.cpu().detach().numpy()
+        return gradients
 
     def forward(self, x):
-        _ = self.model(x)
+        self.output = self.model(x)
         return self._features
 
