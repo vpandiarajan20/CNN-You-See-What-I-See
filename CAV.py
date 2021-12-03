@@ -10,28 +10,37 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import SGDClassifier, LogisticRegression
 from Classifier import LinearClassifier, train_model
+from FeatureExtractor import FeatureExtractor
 
 
-class FeatureExtractor(nn.Module):
-    def __init__(self, model: nn.Module, layers: Iterable[str]):
-        super().__init__()
-        self.model = model
-        self.layers = layers
-        self._features = {layer: torch.empty(0) for layer in layers}
+def preprocess_activations(randomfiles = "RandomImages", concepts = ["Striped"]):
+    googlenet = models.googlenet(pretrained=True)
+    resnet_features = FeatureExtractor(googlenet, layers=["inception5b"])
+    activations = []
+    labels = []
+    folder_names = np.array()
+    folder_names = concepts.append(randomfiles)
+    for folder in folder_names:    
+        listing = os.listdir(folder)    
+        for file in listing:
+            img = Image.open(folder + "/" + file)
+            convert_tensor = transforms.ToTensor()
+            dummy_input = convert_tensor(img)
+            dummy_input = dummy_input[None, :, :, :]
+            features = resnet_features(dummy_input)
+            newActs = torch.flatten(features["inception5b"])
+            newActs = newActs.detach().numpy()
+            activations.append(newActs)
 
-        for layer_id in layers:
-            layer = dict([*self.model.named_modules()])[layer_id]
-            layer.register_forward_hook(self.save_outputs_hook(layer_id))
+            if folder == "RandomImages":
+                labels.append(0)
+            elif folder == "Striped":
+                labels.append(1)
 
-    def save_outputs_hook(self, layer_id: str) -> Callable:
-        def fn(_, __, output):
-            self._features[layer_id] = output
-        return fn
-
-    def forward(self, x: Tensor) -> Dict[str, Tensor]:
-        _ = self.model(x)
-        return self._features
-
+    activations = np.array(activations)
+    labels = np.array(labels)
+    labels = np.expand_dims(labels, axis=1)
+    return activations, labels 
 
 def CAV(from_file=False, file_name='linear_classifier_model.pt'):
     # inception_v3 = models.inception_v3(pretrained=True)
@@ -51,36 +60,12 @@ def CAV(from_file=False, file_name='linear_classifier_model.pt'):
         return cav
 
     else: 
-        googlenet = models.googlenet(pretrained=True)
-        resnet_features = FeatureExtractor(googlenet, layers=["inception5b"])
-        activations = []
-        labels = []
-        folder_names = np.array(["RandomImages", "Striped"])
-        for folder in folder_names:    
-            listing = os.listdir(folder)    
-            for file in listing:
-                img = Image.open(folder + "/" + file)
-                convert_tensor = transforms.ToTensor()
-                dummy_input = convert_tensor(img)
-                dummy_input = dummy_input[None, :, :, :]
-                features = resnet_features(dummy_input)
-                newActs = torch.flatten(features["inception5b"])
-                newActs = newActs.detach().numpy()
-                activations.append(newActs)
-
-                if folder == "RandomImages":
-                    labels.append(0)
-                elif folder == "Striped":
-                    labels.append(1)
-
-        activations = np.array(activations)
-        labels = np.array(labels)
-        labels = np.expand_dims(labels, axis=1)
-
+        
+        
         print("Shape of Train Dataset: ", activations.shape)
         print("Shape of Labels: ", labels.shape)
 
-
+        activations, labels = preprocess_activations()
 
         # ---------------------------------------------------
         # Train Linear Classifier
