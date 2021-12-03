@@ -17,7 +17,7 @@ from FeatureExtractor import FeatureExtractor
 def compute_directional_derivatives(gradient, cav):
     gradient = gradient.reshape((1,-1))
     dir_der = np.dot(np.squeeze(gradient), np.squeeze(cav)) < 0
-    print(dir_der)
+    # print(dir_der)
     return dir_der
 
 def scoring_tcav(cav, folder, class_name, layer_name):
@@ -26,7 +26,7 @@ def scoring_tcav(cav, folder, class_name, layer_name):
     activations = []
     labels = []
     grads  = []
-    for file in os.listdir("zebras"): # need to create variable for zebras
+    for file in os.listdir("zebras_from_kaggle"): # need to create variable for zebras
         img = Image.open(folder + "/" + file)
         convert_tensor = transforms.ToTensor()
         dummy_input = convert_tensor(img)

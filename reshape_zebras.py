@@ -10,7 +10,7 @@ def reshape_zebras(dir):
         cv2.imwrite(name, img)
 
 def main():
-    reshape_zebras("zebras_from_kaggles")
+    reshape_zebras("zebras_from_kaggle")
 
 
 if __name__ == '__main__':

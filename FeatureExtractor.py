@@ -27,7 +27,6 @@ class FeatureExtractor(nn.Module):
 
     def get_gradients(self, className, layerName):
         activations = self._features[layerName]
-        print(self._features)
 
         activations.register_hook(self.save_grads)
         logits = self.output[:, className]

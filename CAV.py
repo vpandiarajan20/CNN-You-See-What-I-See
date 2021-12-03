@@ -65,9 +65,9 @@ def CAV(from_file=False, file_name='linear_classifier_model.pt'):
     if from_file: 
         classifier = torch.load(file_name)
         cav = (list(classifier.parameters())[0]).detach().numpy()
-        print(cav, cav.shape)
+        # print(cav, cav.shape)
 
-        tcav_score = scoring_tcav(cav, "zebras", 340, "inception5b")
+        tcav_score = scoring_tcav(cav, "zebras_from_kaggle", 340, "inception5b")
         print("score", tcav_score)
         return cav
 
