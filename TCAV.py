@@ -11,4 +11,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import SGDClassifier, LogisticRegression
 from Classifier import LinearClassifier, train_model
 from FeatureExtractor import FeatureExtractor
-import preprocess_activations, cav from CAV
+from CAV import preprocess_activations, cav
+
+
+
+def compute_directional_derivatives(gradients, cav, classID = 340, layer_name="inception5b"):
+    return np.dot(gradients)
