@@ -11,9 +11,27 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import SGDClassifier, LogisticRegression
 from Classifier import LinearClassifier, train_model
 from FeatureExtractor import FeatureExtractor
-from CAV import preprocess_activations, cav
+# from CAV import preprocess_activations, cav
 
 
+def compute_directional_derivatives(gradient, cav):
+    gradient = gradient.reshape((1,-1))
+    dir_der = np.dot(np.squeeze(gradient), np.squeeze(cav)) < 0
+    print(dir_der)
+    return dir_der
 
-def compute_directional_derivatives(gradients, cav, classID = 340, layer_name="inception5b"):
-    return np.dot(gradients)
+def scoring_tcav(cav, folder, class_name, layer_name):
+    googlenet = models.googlenet(pretrained=True)
+    resnet_features = FeatureExtractor(googlenet, layers=[layer_name])
+    activations = []
+    labels = []
+    grads  = []
+    for file in os.listdir("zebras"): # need to create variable for zebras
+        img = Image.open(folder + "/" + file)
+        convert_tensor = transforms.ToTensor()
+        dummy_input = convert_tensor(img)
+        dummy_input = dummy_input[None, :, :, :]    
+        features = resnet_features(dummy_input)
+        grads.append(resnet_features.get_gradients(340, layer_name)) # needs to be replaced
+    score = np.mean(np.array([compute_directional_derivatives(grad, cav) for grad in grads]).astype(np.int))
+    return score

@@ -1,5 +1,6 @@
 import torch
 from torch import nn, Tensor
+from torch._C import ScriptObject
 import torchvision.models as models
 from typing import Dict, Iterable, Callable
 from torchvision import transforms
@@ -11,6 +12,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import SGDClassifier, LogisticRegression
 from Classifier import LinearClassifier, train_model
 from FeatureExtractor import FeatureExtractor
+from TCAV import scoring_tcav, compute_directional_derivatives
 
 
 # experiment with differnet models 
@@ -35,9 +37,6 @@ def preprocess_activations(randomfiles = "RandomImages", concepts = ["Striped"],
             dummy_input = convert_tensor(img)
             dummy_input = dummy_input[None, :, :, :]
             features = resnet_features(dummy_input)
-
-            gradients = resnet_features.get_gradients(340, layer_name)
-
             newActs = torch.flatten(features[layer_name])
             newActs = newActs.detach().numpy()
             activations.append(newActs)
@@ -50,7 +49,7 @@ def preprocess_activations(randomfiles = "RandomImages", concepts = ["Striped"],
     activations = np.array(activations)
     labels = np.array(labels)
     labels = np.expand_dims(labels, axis=1)
-    return activations, labels, gradients 
+    return activations, labels #, gradients 
 
 def CAV(from_file=False, file_name='linear_classifier_model.pt'):
     # inception_v3 = models.inception_v3(pretrained=True)
@@ -67,6 +66,9 @@ def CAV(from_file=False, file_name='linear_classifier_model.pt'):
         classifier = torch.load(file_name)
         cav = (list(classifier.parameters())[0]).detach().numpy()
         print(cav, cav.shape)
+
+        tcav_score = scoring_tcav(cav, "zebras", 340, "inception5b")
+        print("score", tcav_score)
         return cav
 
     else: 
@@ -112,6 +114,9 @@ def CAV(from_file=False, file_name='linear_classifier_model.pt'):
         cav = list(classifer.parameters())
         print(cav)
 
+        tcav_score = scoring_tcav(cav, "zebras", 340, "inception5b")
+        print("score", tcav_score)
+
         torch.save(classifer, file_name)
 
         return cav 
@@ -130,7 +135,7 @@ def CAV(from_file=False, file_name='linear_classifier_model.pt'):
         # return cav
 
 def main():
-    cav = CAV(from_file=False)
+    cav = CAV(from_file=True)
 
 
 if __name__ == '__main__':
