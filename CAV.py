@@ -1,3 +1,4 @@
+from numpy.lib.function_base import gradient
 import torch
 from torch import nn, Tensor
 from torch._C import ScriptObject
@@ -12,6 +13,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import SGDClassifier, LogisticRegression
 from Classifier import LinearClassifier, train_model
 from FeatureExtractor import FeatureExtractor
+from ModelWrapper import ModelWrapper
 from TCAV import scoring_tcav, compute_directional_derivatives
 
 
@@ -22,34 +24,47 @@ def directional_derivative(classifier, cav, classID = 340, layer_name="inception
     pass
 
 
-def preprocess_activations(randomfiles = "RandomImages", concepts = ["Striped"], classID = 340, layer_name="inception5b"):
+def preprocess_activations(randomfiles = "RandomImages", concepts = ["Dotted"], classID = 340, layer_name="inception5b"):
     googlenet = models.googlenet(pretrained=True)
     resnet_features = FeatureExtractor(googlenet, layers=[layer_name])
+    resnet_features_model_wrapper = ModelWrapper(googlenet, layers=[layer_name])
     activations = []
+    activations_model_wrapper = []
     labels = []
     concepts.append(randomfiles)
 
     for folder in concepts:    
         listing = os.listdir(folder)    
-        for file in listing:
+        for file in listing[0:50]:
             img = Image.open(folder + "/" + file)
             convert_tensor = transforms.ToTensor()
             dummy_input = convert_tensor(img)
             dummy_input = dummy_input[None, :, :, :]
             features = resnet_features(dummy_input)
+            resnet_features_model_wrapper(dummy_input)
+            features_model_wrapper = resnet_features_model_wrapper.intermediate_activations
             newActs = torch.flatten(features[layer_name])
             newActs = newActs.detach().numpy()
+            newActs_model_wrapper = torch.flatten(features_model_wrapper[layer_name])
+            newActs_model_wrapper = newActs_model_wrapper.detach().numpy()
             activations.append(newActs)
-
+            activations_model_wrapper.append(newActs_model_wrapper)
             if folder == "RandomImages":
                 labels.append(0)
-            elif folder == "Striped":
+            elif folder == "Dotted":
                 labels.append(1)
+            print(img)
 
     activations = np.array(activations)
+    activations_model_wrapper = np.array(activations_model_wrapper)
     labels = np.array(labels)
     labels = np.expand_dims(labels, axis=1)
-    return activations, labels #, gradients 
+    for x, y in zip(activations, activations_model_wrapper):
+        mse = ((x - y)**2).mean(axis=None)
+        print(mse)
+    
+    # return activations, labels #, gradients 
+    return activations_model_wrapper, labels
 
 def CAV(from_file=False, file_name='linear_classifier_model.pt'):
     # inception_v3 = models.inception_v3(pretrained=True)
@@ -73,7 +88,8 @@ def CAV(from_file=False, file_name='linear_classifier_model.pt'):
 
     else: 
         
-        activations, labels, gradients = preprocess_activations()
+        # activations, labels, gradients = preprocess_activations()
+        activations, labels = preprocess_activations()
         print("Shape of Train Dataset: ", activations.shape)
         print("Shape of Labels: ", labels.shape)
         # ---------------------------------------------------
@@ -111,10 +127,11 @@ def CAV(from_file=False, file_name='linear_classifier_model.pt'):
 
         print("Accuracy:", accuracy)
 
-        cav = list(classifer.parameters())
+        cav = list(classifer.parameters())[0]
+        cav = cav.detach().numpy()
         print(cav)
 
-        tcav_score = scoring_tcav(cav, "zebras", 340, "inception5b")
+        tcav_score = scoring_tcav(cav, "zebras_from_kaggle", 340, "inception5b")
         print("score", tcav_score)
 
         torch.save(classifer, file_name)
