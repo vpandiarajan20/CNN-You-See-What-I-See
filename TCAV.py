@@ -26,7 +26,7 @@ def scoring_tcav(cav, folder, class_name, layer_name):
     activations = []
     labels = []
     grads  = []
-    for file in os.listdir("zebras_from_kaggle"): # need to create variable for zebras
+    for file in os.listdir("zebras_from_kaggle")[0:4]: # need to create variable for zebras
         img = Image.open(folder + "/" + file)
         convert_tensor = transforms.ToTensor()
         dummy_input = convert_tensor(img)

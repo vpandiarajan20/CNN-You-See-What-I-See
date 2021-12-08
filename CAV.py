@@ -18,9 +18,6 @@ from TCAV import scoring_tcav, compute_directional_derivatives
 # experiment with differnet models 
 # experiment w torch vs sklearn libraries for linear model (torch linear classifier, sgdclassifier, logisitic regression)
 
-def directional_derivative(classifier, cav, classID = 340, layer_name="inception5b"):
-    pass
-
 
 def preprocess_activations(randomfiles = "RandomImages", concepts = ["Striped"], classID = 340, layer_name="inception5b"):
     googlenet = models.googlenet(pretrained=True)
@@ -49,6 +46,7 @@ def preprocess_activations(randomfiles = "RandomImages", concepts = ["Striped"],
     activations = np.array(activations)
     labels = np.array(labels)
     labels = np.expand_dims(labels, axis=1)
+    print(activations[:10])
     return activations, labels #, gradients 
 
 def CAV(from_file=False, file_name='linear_classifier_model.pt'):
@@ -66,14 +64,14 @@ def CAV(from_file=False, file_name='linear_classifier_model.pt'):
         classifier = torch.load(file_name)
         cav = (list(classifier.parameters())[0]).detach().numpy()
         # print(cav, cav.shape)
-
+        print("Calculating TCAV Score")
         tcav_score = scoring_tcav(cav, "zebras_from_kaggle", 340, "inception5b")
         print("score", tcav_score)
         return cav
 
     else: 
         
-        activations, labels, gradients = preprocess_activations()
+        activations, labels = preprocess_activations()
         print("Shape of Train Dataset: ", activations.shape)
         print("Shape of Labels: ", labels.shape)
         # ---------------------------------------------------
@@ -90,8 +88,8 @@ def CAV(from_file=False, file_name='linear_classifier_model.pt'):
         y_test = torch.tensor(y_test)
 
         classifer = LinearClassifier(activations.shape[1])
+        
         n_epochs = 100
-
         criterion = torch.nn.BCEWithLogitsLoss()
         optimizer = torch.optim.Adam(classifer.parameters(), lr=0.001)
 
@@ -112,30 +110,35 @@ def CAV(from_file=False, file_name='linear_classifier_model.pt'):
         print("Accuracy:", accuracy)
 
         cav = list(classifer.parameters())
+        cav = cav.detach.numpy()
         print(cav)
 
-        tcav_score = scoring_tcav(cav, "zebras", 340, "inception5b")
-        print("score", tcav_score)
+        # tcav_score = scoring_tcav(cav, "zebras", 340, "inception5b")
+        # print("score", tcav_score)
 
         torch.save(classifer, file_name)
 
-        return cav 
+        #return cav 
 
 
-        # model = SGDClassifier(alpha=0.001)
-        # model.fit(X_train, y_train)
+        #model = SGDClassifier(alpha=0.001)
+        #model.fit(X_train, y_train)
 
-        # model.evaulate()
+        #model.evaulate()
 
         # if len(model.coef_) == 1:
         #     cav = np.array([-model.coef_[0], model.coef_[0]])
         # else: 
         #     cav = -np.array(model.coef_)
         # print(cav)
-        # return cav
+        # print(cav.shape)
+        tcav_score = scoring_tcav(cav, "zebras_from_kaggle", 340, "inception5b")
+        print("score", tcav_score)
+
+        return cav
 
 def main():
-    cav = CAV(from_file=True)
+    cav = CAV(from_file=False)
 
 
 if __name__ == '__main__':
