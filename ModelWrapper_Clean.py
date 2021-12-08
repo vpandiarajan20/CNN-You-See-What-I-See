@@ -1,12 +1,15 @@
 import torch
+from torch import nn
 
-class ModelWrapper_Clean():
+class ModelWrapper_Clean(nn.Module):
     def __init__(self, model, layers):
         super().__init__()
         self.model = model
         self.layers = layers
         self.activations = {}
         self.gradients
+        self.output
+        
         for layer in layers:
             layer_hook = dict([*self.model.named_modules()])[layer]
             layer_hook.register_forward_hook(self.save_features(layer))
@@ -29,6 +32,6 @@ class ModelWrapper_Clean():
 
     def forward(self, x):
         self.output = self.model(x)
-        return self._features
+        return self.activations
 
 
