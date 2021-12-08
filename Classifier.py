@@ -13,9 +13,6 @@ class LinearClassifier(torch.nn.Module):
     def forward(self, batch_data):
         return self.linear_classifier(batch_data)
 
-
-
-
 def train_model(model, criterion, optimizer, X_train, y_train, n_epochs=100):
   train_losses = np.zeros(n_epochs)
   test_losses = np.zeros(n_epochs)
