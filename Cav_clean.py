@@ -47,7 +47,7 @@ class CAV(object):
 
         print("Generating Activations for Images in Folder:", folder)
 
-        files = os.listdir(folder)[0:200]
+        files = os.listdir(folder)[0:500]
         model_wrapper = ModelWrapper_Clean(self.model, layers=[self.layer]) #TODO: change name of FeatureExtractor
 
         all_activations = []
@@ -141,9 +141,9 @@ class CAV(object):
         
         classifer = LinearClassifier(X_train.shape[1])
 
-        n_epochs = 100
+        n_epochs = 50
         criterion = torch.nn.BCEWithLogitsLoss()
-        optimizer = torch.optim.Adam(classifer.parameters(), lr=0.001)
+        optimizer = torch.optim.SGD(classifer.parameters(), lr=0.001)
 
         train_losses = train_model(classifer, criterion, optimizer, X_train, y_train, n_epochs)
 
@@ -153,7 +153,7 @@ class CAV(object):
 
         logits = classifer(X_test)
         print(logits)
-        pred_labels = (logits > 0.5).numpy().astype(int)
+        pred_labels = (logits > 0).numpy().astype(int)
 
         pred_equals_labels = (y_test.numpy() == pred_labels)
         accuracy = np.mean(pred_equals_labels)
