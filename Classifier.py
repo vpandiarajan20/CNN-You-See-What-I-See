@@ -9,9 +9,12 @@ class LinearClassifier(torch.nn.Module):
     def __init__(self, input_dimension):
         super().__init__()
         self.linear_classifier = torch.nn.Linear(input_dimension, 1)
+        self.sigmoid_layer = torch.nn.Sigmoid()
 
     def forward(self, batch_data):
-        return self.linear_classifier(batch_data)
+      logits = self.linear_classifier(batch_data)
+      probs = self.sigmoid_layer(logits)
+      return probs
 
 def train_model(model, criterion, optimizer, X_train, y_train, n_epochs=100):
   train_losses = np.zeros(n_epochs)
@@ -21,7 +24,8 @@ def train_model(model, criterion, optimizer, X_train, y_train, n_epochs=100):
     outputs = model(X_train)
     y_train = y_train.type_as(outputs)
 
-    loss = criterion(outputs, y_train)
+
+    loss = criterion(torch.squeeze(outputs), y_train)
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()

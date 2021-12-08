@@ -11,23 +11,14 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import SGDClassifier, LogisticRegression
 from Classifier import LinearClassifier, train_model
-from FeatureExtractor import FeatureExtractor
 from tqdm import tqdm
 
-import tensorflow as tf # only used for shuffling the data 
+import tensorflow as tf
+
+from ModelWrapper_Clean import ModelWrapper_Clean # only used for shuffling the data 
 
 
 TEST_PERCENT_SPLIT = 0.2
-
-def load_model(self):
-    '''
-    Loads pretrained model on imagenet from pytorch repository
-        Parameters: 
-            None
-        Returns: 
-            model (pytorch model): pytorch model trained on imagnet 
-    '''
-    return models.googlenet(pretrained=True) 
 
 class CAV(object):
     def __init__(self, model, concept, randomfiles, layer): 
@@ -56,8 +47,8 @@ class CAV(object):
 
         print("Generating Activations for Images in Folder:", folder)
 
-        files = os.listdir(folder)
-        model_wrapper = FeatureExtractor(self.model, layers=[self.layer]) #TODO: change name of FeatureExtractor
+        files = os.listdir(folder)[0:200]
+        model_wrapper = ModelWrapper_Clean(self.model, layers=[self.layer]) #TODO: change name of FeatureExtractor
 
         all_activations = []
 
@@ -75,7 +66,6 @@ class CAV(object):
             activations = torch.flatten(features[self.layer])
             activations = activations.detach().numpy()
             # convert activations from tensor to numpy array 
-
             all_activations.append(activations)
 
         all_activations = np.array(all_activations)
@@ -106,13 +96,13 @@ class CAV(object):
         labels = np.array([1] * n_conc_activations + [0] * n_rand_activations)
         # creates a numpy array of n_conc_activations 1s and then n_rand_activations 0s
 
-        indices = range(22)
+        indices = range(labels.shape[0])
         shuffled_indices = tf.random.shuffle(indices)
 
         shuffled_activations = tf.gather(activations, shuffled_indices).numpy()
         shuffled_labels = tf.gather(labels, shuffled_indices).numpy()
 
-        idx_split = int(TEST_PERCENT_SPLIT * labels.shape[0])
+        idx_split = int((1 -TEST_PERCENT_SPLIT) * labels.shape[0])
         print("Number of train examples:", idx_split)
         print("Number of test examples:", n_conc_activations +  n_rand_activations - idx_split)
 
@@ -121,6 +111,7 @@ class CAV(object):
     
         X_test = shuffled_activations[idx_split:]
         y_test = shuffled_labels[idx_split:]
+
 
         assert(X_train.shape[0] == y_train.shape[0])
         assert(X_test.shape[0] == y_test.shape[0])
@@ -157,15 +148,18 @@ class CAV(object):
         train_losses = train_model(classifer, criterion, optimizer, X_train, y_train, n_epochs)
 
         cav = list(classifer.parameters())[0]
-        cav = cav.detach.numpy()
+        cav = cav.detach().numpy()
         # cav is the model weights  
 
         logits = classifer(X_test)
-        pred_labels = (logits > 0).numpy().astype(int)
+        print(logits)
+        pred_labels = (logits > 0.5).numpy().astype(int)
 
         pred_equals_labels = (y_test.numpy() == pred_labels)
         accuracy = np.mean(pred_equals_labels)
         # computes accuracy in the test set
+
+        print("Shape of CAV", cav.shape)
 
         return cav, train_losses, accuracy
 
@@ -180,10 +174,12 @@ class CAV(object):
                 accuracy (float): accuracy of classification on the testing data set
 
         '''
+        print("Generating CAV from Sklearn SGDClassifier...")
+
         model = SGDClassifier(alpha=0.001)
         model.fit(self.X_train, self.y_train)
     
-        cav = -np.array(model.coef_)
+        cav = np.array(model.coef_)
  
         pred_labels = model.predict(self.X_test) 
         pred_equals_labels = (self.y_test == pred_labels)
@@ -202,10 +198,13 @@ class CAV(object):
             Returns: 
                 cav (np.array): concept activation vector representing the normal vector to the decision hyperplane
         '''
+
+        print("Generating CAV from Sklearn LogisticRegression...")
+
         model = LogisticRegression()
         model.fit(self.X_train, self.y_train)
     
-        cav = -np.array(model.coef_)
+        cav = np.array(model.coef_)
  
         pred_labels = model.predict(self.X_test) 
         pred_equals_labels = (self.y_test == pred_labels)

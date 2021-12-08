@@ -1,10 +1,12 @@
 import numpy as np
 import os
+from Cav_clean import CAV
 from FeatureExtractor import FeatureExtractor
 from PIL import Image
 from torchvision import transforms
-import tqdm
+from tqdm import tqdm
 import torch
+from ModelWrapper_Clean import ModelWrapper_Clean
 
 def compute_directional_derivatives(gradient, cav):
     '''
@@ -16,10 +18,9 @@ def compute_directional_derivatives(gradient, cav):
             dir_der (boolean): boolean representing whether directional 
             derivative is negative or positive 
     '''
-    gradient = gradient.reshape((1,-1))
-    dir_der = np.dot(np.squeeze(gradient), np.squeeze(cav)) < 0
-    # print(dir_der)
-    return dir_der
+    
+    dir_der = np.dot(np.squeeze(gradient), np.squeeze(cav))
+    return dir_der < 0
 
 def scoring_tcav(model, cav, folder, class_number, layer_name):
     '''
@@ -38,12 +39,13 @@ def scoring_tcav(model, cav, folder, class_number, layer_name):
 
     gradients = []
     files = os.listdir(folder)
-    model_wrapper = FeatureExtractor(model, layer_name) #TODO: change name of FeatureExtractor
-
+    model_wrapper = ModelWrapper_Clean(model, layer_name) #TODO: change name of FeatureExtractor
+    model_wrapper.eval()
     gradients = []
 
-    for file in tqdm(files):
+    for file in tqdm(files[0:500]):
         img = Image.open(folder + "/" + file)
+        
         convert_tensor = transforms.ToTensor()
         # creates a function that transforms PIL Image's to Pytorch Tensor's 
 
@@ -52,10 +54,10 @@ def scoring_tcav(model, cav, folder, class_number, layer_name):
         # expands dimensions from [3, 224, 224] to [1, 3, 224, 224]
         assert(img_as_tensor.shape == torch.Size([1, 3, 224, 224]))
 
-        model_wrapper(img_as_tensor)
-        gradient = model_wrapper.get_gradients(class_number, layer_name)
-        gradient = torch.flatten(gradient)
-        gradient = gradient.detach().numpy()
+        _ = model_wrapper(img_as_tensor)
+
+        gradient = model_wrapper.get_gradients(class_number, layer_name[0]) #TODO: inconsistent
+        gradient = gradient.flatten()
         # get and convert gradient from tensor to flattened numpy array 
 
         gradients.append(gradient)
@@ -85,6 +87,24 @@ class TCAV(object):
         self.class_number = class_number
         self.layers = layers
         self.folder = folder
+    
+    def generate_cavs_sklearn_class(self, concept, randomfiles):
+        cav_obj = CAV(self.model, concept, randomfiles, self.layers[0]) #TODO: adapt for multiple players
+        cav, accuracy = cav_obj.generate_CAV_from_sklearn_classifier() #TODO: make option to use several functions here
+        print("Accuracy of CAV Test Set Scikit-Learn SGDClassifier:", accuracy)
+        self.cav = cav #TODO: adapt for multiple cavs
 
-    def return_tcav_score(self, cav):
-        return scoring_tcav(self.model, cav, self.folder, self.class_number, self.layers)
+    def generate_cavs_sklearn_logreg(self, concept, randomfiles):
+        cav_obj = CAV(self.model, concept, randomfiles, self.layers[0]) #TODO: adapt for multiple players
+        cav, accuracy = cav_obj.generate_CAV_from_sklearn_logreg() #TODO: make option to use several functions here
+        print("Accuracy of CAV Test Set Scikit-Learn Logistic Regression:", accuracy)
+        self.cav = cav #TODO: adapt for multiple cavs
+
+    def generate_cavs_pytorch_class(self, concept, randomfiles):
+        cav_obj = CAV(self.model, concept, randomfiles, self.layers[0]) #TODO: adapt for multiple players
+        cav, _, accuracy = cav_obj.generate_CAV_from_pytorch_classifier() #TODO: make option to use several functions here
+        print("Accuracy of CAV Test Set Pytorch Classifier:", accuracy)
+        self.cav = cav #TODO: adapt for multiple cavs
+
+    def return_tcav_score(self): #TODO: allow to put in cavs
+        return scoring_tcav(self.model, self.cav, self.folder, self.class_number, self.layers)
