@@ -22,7 +22,7 @@ def compute_directional_derivatives(gradient, cav):
     return dir_der
 
 def scoring_tcav(cav, folder, class_name, layer_name):
-    googlenet = models.googlenet(pretrained=True)
+    googlenet = models.resnet101(pretrained=True)
     resnet_features = FeatureExtractor(googlenet, layers=[layer_name])
     resnet_features_model_wrapper = ModelWrapper(googlenet, layers=[layer_name])
     activations = []
@@ -30,15 +30,15 @@ def scoring_tcav(cav, folder, class_name, layer_name):
     labels = []
     grads  = []
     grads_model_wrapper = []
-    for file in os.listdir("zebras_from_kaggle")[0:20]: # need to create variable for zebras
+    for file in os.listdir("zebras_from_kaggle")[0:30]: # need to create variable for zebras
         img = Image.open(folder + "/" + file)
         convert_tensor = transforms.ToTensor()
         dummy_input = convert_tensor(img)
-        dummy_input = dummy_input[None, :, :, :]    
+        dummy_input = dummy_input[None, :, :, :]
         features = resnet_features(dummy_input)
-        grads.append(resnet_features.get_gradients(340, layer_name)) # needs to be replaced
+        grads.append(resnet_features.get_gradients(463, layer_name)) # needs to be replaced
         features_model_wrapper = resnet_features_model_wrapper(dummy_input)
-        grads_model_wrapper.append(resnet_features_model_wrapper.generate_gradients(340, layer_name))
+        grads_model_wrapper.append(resnet_features_model_wrapper.generate_gradients(463, layer_name))
 
     for x, y in zip(grads, grads_model_wrapper):
         print("START")
@@ -46,6 +46,8 @@ def scoring_tcav(cav, folder, class_name, layer_name):
         print(":DIFFERENT GRADIENT:")
         print(y)
         print("END")
+        print(x-y)
+        print("Difference")
         mse = ((x - y)**2).mean(axis=None)
         print(mse)
     
