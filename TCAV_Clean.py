@@ -103,8 +103,8 @@ class TCAV(object):
         '''
         generates a concept activation vector using the scikit-learn SGD classifier
             Parameters:
-                concept:
-                randomfiles 
+                concept (string): location of folder with concept that generating CAV for (e.g. Stripes)
+                randomfiles (string): location of folder with random files 
         '''
         for layer in self.layers:
             cav_obj = CAV(self.model, concept, randomfiles, layer) 
@@ -113,6 +113,12 @@ class TCAV(object):
             self.cavs.append(cav) 
 
     def generate_cavs_sklearn_logreg(self, concept, randomfiles):
+        '''
+        generates a concept activation vector using the scikit-learn SGD classifier
+            Parameters:
+                concept (string): location of folder with concept that generating CAV for (e.g. Stripes)
+                randomfiles (string): location of folder with random files 
+        '''
         for layer in self.layers:
             cav_obj = CAV(self.model, concept, randomfiles, layer) 
             cav, accuracy = cav_obj.generate_CAV_from_sklearn_logreg() 
@@ -120,6 +126,12 @@ class TCAV(object):
             self.cavs.append(cav) 
 
     def generate_cavs_pytorch_class(self, concept, randomfiles):
+        '''
+        generates a concept activation vector using the scikit-learn SGD classifier
+            Parameters:
+                concept (string): location of folder with concept that generating CAV for (e.g. Stripes)
+                randomfiles (string): location of folder with random files 
+        '''
         for layer in self.layers:
             cav_obj = CAV(self.model, concept, randomfiles, layer) 
             cav, _, accuracy = cav_obj.generate_CAV_from_pytorch_classifier() 
