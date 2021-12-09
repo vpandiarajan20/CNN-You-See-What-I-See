@@ -38,6 +38,16 @@ class TCAV(object):
         return dir_der < 0
 
     def run_tcav(self, concept, randomfiles, layer, classifier_type):
+        '''
+        generates the concept activation vector and computes the tcav score
+            Parameters: 
+                concept (string): location of folder with concept that generating CAV for (e.g. Stripes)
+                randomfiles (string): location of folder with random files 
+                layer (string): name of the layer that activations are extracted from
+                classifier_type (string): The classifier that we want to use
+            Returns:
+                float representing the tcav score of the CAV
+        '''
         cav_obj = CAV(self.model, concept, randomfiles, layer)
         if (classifier_type == "SGD"):
             cav, accuracy = cav_obj.generate_CAV_from_sklearn_classifier()
@@ -48,6 +58,14 @@ class TCAV(object):
         return self.compute_tcav_score(cav, layer)
 
     def compute_tcav_score(self, cav, layer):
+        '''
+        computes the tcav score of a given concept activation vector at the given layer
+            Parameters: 
+                cav (np.array): concept activation vector representing the normal vector to the decision hyperplane
+                layer (string): name of the layer that activations are extracted from
+            Returns:
+                float representing the tcav score of the CAV
+        '''
         gradients = []
         files = os.listdir(self.folder)
         model_wrapper = ModelWrapper_Clean(self.model, layer)
@@ -83,6 +101,12 @@ class TCAV(object):
 
 
     def generate_cavs_sklearn_class(self, concept, randomfiles):
+        '''
+        generates a concept activation vector using the scikit-learn SGD classifier
+            Parameters:
+                concept:
+                randomfiles 
+        '''
         for layer in self.layers:
             cav_obj = CAV(self.model, concept, randomfiles, layer) #TODO: adapt for multiple players
             cav, accuracy = cav_obj.generate_CAV_from_sklearn_classifier() #TODO: make option to use several functions here

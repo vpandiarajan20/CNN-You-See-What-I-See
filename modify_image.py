@@ -11,6 +11,11 @@ import random
 
 
 def reshape_zebras(dir):
+    '''
+    reshapes all the images of zebras in dir to be 224 by 224
+        Parameters:
+            dir: the directory in which the images are located
+    '''
     listing = os.listdir(dir)    
     for file in listing:
         name = dir + "/" + file
@@ -19,6 +24,11 @@ def reshape_zebras(dir):
         cv2.imwrite(name, img)
 
 def augment_images(imageFolder):
+    '''
+    creates a random set of augmented images for every image in imageFolder
+        Parameters:
+            imageFolder: the directory in which the images are located
+    '''
     folder = imageFolder #'/Users/neilxu/Documents/cs1470/CNN-You-See-What-I-See/Striped2'
 
     imgFolder = folder.split('/')[-1] #'Striped2'
