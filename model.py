@@ -28,6 +28,8 @@ class Resnet18(nn.Module):
                 x (np array): input into Resnet18
         '''
         feature = self.feature_layers(x)
+        # z = self.layer2(feature)
+        # r = self.layer3(feature)
         a = self.layer4(feature)
         b = self.avgpool(a)
         c = b.view(b.size(0), -1)

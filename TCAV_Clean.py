@@ -1,7 +1,6 @@
 import numpy as np
 import os
 from Cav_clean import CAV
-from FeatureExtractor import FeatureExtractor
 from PIL import Image
 from torchvision import transforms
 from tqdm import tqdm
