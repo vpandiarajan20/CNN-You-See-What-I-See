@@ -13,9 +13,9 @@ from sklearn.linear_model import SGDClassifier, LogisticRegression
 from Classifier import LinearClassifier, train_model
 from tqdm import tqdm
 
-import tensorflow as tf
+import tensorflow as tf #only used for shuffling data
 
-from ModelWrapper_Clean import ModelWrapper_Clean # only used for shuffling the data 
+from ModelWrapper_Clean import ModelWrapper_Clean
 
 
 TEST_PERCENT_SPLIT = 0.2
@@ -141,7 +141,7 @@ class CAV(object):
         
         classifer = LinearClassifier(X_train.shape[1])
 
-        n_epochs = 50
+        n_epochs = 150
         criterion = torch.nn.BCEWithLogitsLoss()
         optimizer = torch.optim.SGD(classifer.parameters(), lr=0.001)
 
@@ -152,7 +152,7 @@ class CAV(object):
         # cav is the model weights  
 
         logits = classifer(X_test)
-        print(logits)
+        # print(logits)
         pred_labels = (logits > 0).numpy().astype(int)
 
         pred_equals_labels = (y_test.numpy() == pred_labels)

@@ -57,7 +57,8 @@ def augument_images(imageFolder):
 def main():
     # reshape_zebras("zebras_from_kaggle")
     # augument_images("Striped")
-    augument_images("Dotted")
+    # augument_images("Dotted")
+    augument_images("Bubbly")
 
 
 if __name__ == '__main__':

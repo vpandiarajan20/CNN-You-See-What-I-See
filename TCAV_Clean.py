@@ -39,11 +39,11 @@ def scoring_tcav(model, cav, folder, class_number, layer_name):
 
     gradients = []
     files = os.listdir(folder)
-    model_wrapper = ModelWrapper_Clean(model, layer_name) #TODO: change name of FeatureExtractor
+    model_wrapper = ModelWrapper_Clean(model, layer_name)
     model_wrapper.eval()
     gradients = []
 
-    for file in tqdm(files[0:500]):
+    for file in tqdm(files[0:250]):
         img = Image.open(folder + "/" + file)
         
         convert_tensor = transforms.ToTensor()
@@ -56,7 +56,7 @@ def scoring_tcav(model, cav, folder, class_number, layer_name):
 
         _ = model_wrapper(img_as_tensor)
 
-        gradient = model_wrapper.get_gradients(class_number, layer_name[0]) #TODO: inconsistent
+        gradient = model_wrapper.get_gradients(class_number, layer_name) #TODO: inconsistent
         gradient = gradient.flatten()
         # get and convert gradient from tensor to flattened numpy array 
 
@@ -79,32 +79,35 @@ class TCAV(object):
             Parameters:
                 model (pytorch model): pretrained pytorch model trained on imagenet
                 class_number (int): int corresponding to the imagenet classication
-                layers (np array): name of layer that activations are extracted
-                                   from
+                layers (np array): name of layer that activations are extracted from
                 folder (string): name of folder containing pictures of intended class
         '''
         self.model = model
         self.class_number = class_number
         self.layers = layers
         self.folder = folder
+        self.cavs = []
     
     def generate_cavs_sklearn_class(self, concept, randomfiles):
-        cav_obj = CAV(self.model, concept, randomfiles, self.layers[0]) #TODO: adapt for multiple players
-        cav, accuracy = cav_obj.generate_CAV_from_sklearn_classifier() #TODO: make option to use several functions here
-        print("Accuracy of CAV Test Set Scikit-Learn SGDClassifier:", accuracy)
-        self.cav = cav #TODO: adapt for multiple cavs
+        for layer in self.layers:
+            cav_obj = CAV(self.model, concept, randomfiles, layer) #TODO: adapt for multiple players
+            cav, accuracy = cav_obj.generate_CAV_from_sklearn_classifier() #TODO: make option to use several functions here
+            print("Accuracy of CAV Test Set Scikit-Learn SGDClassifier for layer", layer,  ":", accuracy)
+            self.cavs.append(cav) #TODO: adapt for multiple cavs
 
     def generate_cavs_sklearn_logreg(self, concept, randomfiles):
-        cav_obj = CAV(self.model, concept, randomfiles, self.layers[0]) #TODO: adapt for multiple players
-        cav, accuracy = cav_obj.generate_CAV_from_sklearn_logreg() #TODO: make option to use several functions here
-        print("Accuracy of CAV Test Set Scikit-Learn Logistic Regression:", accuracy)
-        self.cav = cav #TODO: adapt for multiple cavs
+        for layer in self.layers:
+            cav_obj = CAV(self.model, concept, randomfiles, layer) #TODO: adapt for multiple players
+            cav, accuracy = cav_obj.generate_CAV_from_sklearn_logreg() #TODO: make option to use several functions here
+            print("Accuracy of CAV Test Set Scikit-Learn Logistic Regression for layer", layer,  ":", accuracy)
+            self.cavs.append(cav) #TODO: adapt for multiple cavs
 
     def generate_cavs_pytorch_class(self, concept, randomfiles):
-        cav_obj = CAV(self.model, concept, randomfiles, self.layers[0]) #TODO: adapt for multiple players
-        cav, _, accuracy = cav_obj.generate_CAV_from_pytorch_classifier() #TODO: make option to use several functions here
-        print("Accuracy of CAV Test Set Pytorch Classifier:", accuracy)
-        self.cav = cav #TODO: adapt for multiple cavs
+        for layer in self.layers:
+            cav_obj = CAV(self.model, concept, randomfiles, layer) #TODO: adapt for multiple players
+            cav, _, accuracy = cav_obj.generate_CAV_from_pytorch_classifier() #TODO: make option to use several functions here
+            print("Accuracy of CAV Test Set Pytorch Classifier for layer", layer,  ":", accuracy)
+            self.cavs.append(cav) #TODO: adapt for multiple cavs
 
-    def return_tcav_score(self): #TODO: allow to put in cavs
-        return scoring_tcav(self.model, self.cav, self.folder, self.class_number, self.layers)
+    def return_tcav_score(self, cav, layer): #TODO: allow to put in cavs
+        return scoring_tcav(self.model, cav, self.folder, self.class_number, layer)
