@@ -84,21 +84,21 @@ class TCAV(object):
 
     def generate_cavs_sklearn_class(self, concept, randomfiles):
         for layer in self.layers:
-            cav_obj = CAV(self.model, concept, randomfiles, layer) #TODO: adapt for multiple players
-            cav, accuracy = cav_obj.generate_CAV_from_sklearn_classifier() #TODO: make option to use several functions here
+            cav_obj = CAV(self.model, concept, randomfiles, layer) 
+            cav, accuracy = cav_obj.generate_CAV_from_sklearn_classifier() 
             print("Accuracy of CAV Test Set Scikit-Learn SGDClassifier for layer", layer,  ":", accuracy)
-            self.cavs.append(cav) #TODO: adapt for multiple cavs
+            self.cavs.append(cav) 
 
     def generate_cavs_sklearn_logreg(self, concept, randomfiles):
         for layer in self.layers:
-            cav_obj = CAV(self.model, concept, randomfiles, layer) #TODO: adapt for multiple players
-            cav, accuracy = cav_obj.generate_CAV_from_sklearn_logreg() #TODO: make option to use several functions here
+            cav_obj = CAV(self.model, concept, randomfiles, layer) 
+            cav, accuracy = cav_obj.generate_CAV_from_sklearn_logreg() 
             print("Accuracy of CAV Test Set Scikit-Learn Logistic Regression for layer", layer,  ":", accuracy)
-            self.cavs.append(cav) #TODO: adapt for multiple cavs
+            self.cavs.append(cav) 
 
     def generate_cavs_pytorch_class(self, concept, randomfiles):
         for layer in self.layers:
-            cav_obj = CAV(self.model, concept, randomfiles, layer) #TODO: adapt for multiple players
-            cav, _, accuracy = cav_obj.generate_CAV_from_pytorch_classifier() #TODO: make option to use several functions here
+            cav_obj = CAV(self.model, concept, randomfiles, layer) 
+            cav, _, accuracy = cav_obj.generate_CAV_from_pytorch_classifier() 
             print("Accuracy of CAV Test Set Pytorch Classifier for layer", layer,  ":", accuracy)
-            self.cavs.append(cav) #TODO: adapt for multiple cavs
+            self.cavs.append(cav) 

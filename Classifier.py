@@ -7,16 +7,30 @@ import torch
 class LinearClassifier(torch.nn.Module):
 
     def __init__(self, input_dimension):
-        super().__init__()
-        self.linear_classifier = torch.nn.Linear(input_dimension, 1)
-        #self.sigmoid_layer = torch.nn.Sigmoid()
+      ''' initialize model'''
+      super().__init__()
+      self.linear_classifier = torch.nn.Linear(input_dimension, 1)
+      self.sigmoid_layer = torch.nn.Sigmoid()
 
     def forward(self, batch_data):
+      ''' forward pass'''
       logits = self.linear_classifier(batch_data)
       #probs = self.sigmoid_layer(logits)
       return logits
 
 def train_model(model, criterion, optimizer, X_train, y_train, n_epochs=100):
+  '''
+  train model
+    Parameter:
+      model (pytorch model): linear classifier model
+      criterion ():
+      optimizer (pytorch optimizer): optimizer from pytorch
+      X_train ():
+      y_train ():
+      n_epoches (int): number of epochs to be trained for
+    Returns:
+      train_losses (list): float representing loss for model
+  '''
   train_losses = np.zeros(n_epochs)
   test_losses = np.zeros(n_epochs)
 

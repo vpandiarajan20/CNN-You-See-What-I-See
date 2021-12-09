@@ -32,5 +32,9 @@ def main():
 
     print("TCAV Score SGD:", tcav.run_tcav(conceptFileName, "RandomImages", 'feature_layers', "SGD"))
 
+    tcav2 = TCAV(model, class_number, ['feature_layers'], 'zebras_from_kaggle')
+
+    print("TCAV Score Linear:", tcav2.run_tcav(conceptFileName, "RandomImages", 'feature_layers', "LINEAR"))
+
 if __name__ == '__main__':
     main()
