@@ -62,7 +62,8 @@ class CAV(object):
             # expands dimensions from [3, 224, 224] to [1, 3, 224, 224]
             assert(img_as_tensor.shape == torch.Size([1, 3, 224, 224]))
 
-            features = model_wrapper(img_as_tensor)
+            outputs = model_wrapper(img_as_tensor)
+            features = model_wrapper.activations
             activations = torch.flatten(features[self.layer])
             activations = activations.detach().numpy()
             # convert activations from tensor to numpy array 
