@@ -18,7 +18,7 @@ def reshape_zebras(dir):
         img = cv2.resize(img, (224, 224))
         cv2.imwrite(name, img)
 
-def augument_images(imageFolder):
+def augment_images(imageFolder):
     folder = imageFolder #'/Users/neilxu/Documents/cs1470/CNN-You-See-What-I-See/Striped2'
 
     imgFolder = folder.split('/')[-1] #'Striped2'
@@ -56,9 +56,9 @@ def augument_images(imageFolder):
 
 def main():
     # reshape_zebras("zebras_from_kaggle")
-    # augument_images("Striped")
-    # augument_images("Dotted")
-    augument_images("Bubbly")
+    # augment_images("Striped")
+    # augment_images("Dotted")
+    augment_images("Bubbly")
 
 
 if __name__ == '__main__':
