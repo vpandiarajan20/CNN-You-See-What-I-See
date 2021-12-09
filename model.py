@@ -22,6 +22,11 @@ class Resnet18(nn.Module):
         self.fc = model.fc
 
     def forward(self, x):
+        '''
+        forward pass
+            Parameters:
+                x (np array): input into Resnet18
+        '''
         feature = self.feature_layers(x)
         a = self.layer4(feature)
         b = self.avgpool(a)
