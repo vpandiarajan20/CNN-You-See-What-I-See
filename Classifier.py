@@ -23,10 +23,10 @@ def train_model(model, criterion, optimizer, X_train, y_train, n_epochs=100):
   train model
     Parameter:
       model (pytorch model): linear classifier model
-      criterion ():
+      criterion (pytorch loss): selected loss function 
       optimizer (pytorch optimizer): optimizer from pytorch
-      X_train ():
-      y_train ():
+      X_train (tensor): tensor input to model
+      y_train (tensor): labels for X_train
       n_epoches (int): number of epochs to be trained for
     Returns:
       train_losses (list): float representing loss for model
